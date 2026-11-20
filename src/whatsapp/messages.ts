@@ -1,12 +1,31 @@
 import { createHmac } from "node:crypto";
 import { z } from "zod";
 
+export const SENDER_ID = /^\d{5,20}@(c\.us|lid)$/;
+
+// Reads WAHA_ALLOWED_SENDERS. Empty means nobody is allowed yet; "*" allows everyone.
+export function allowedSenders(raw: string | undefined): string[] {
+  const list = (raw ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const invalid = list.filter((s) => s !== "*" && !SENDER_ID.test(s));
+  if (invalid.length)
+    throw new Error(
+      `WAHA_ALLOWED_SENDERS has entries that are not WhatsApp IDs: ${invalid.join(", ")}. ` +
+        `Use exact IDs such as 15550000001@c.us or 123456789012345@lid, or * for everyone.`,
+    );
+  return list;
+}
+export const isAllowed = (allowed: string[], sender: string) =>
+  allowed.includes("*") || allowed.includes(sender);
+
 const eventSchema = z.object({
   event: z.literal("message"),
   session: z.string(),
   payload: z.object({
     id: z.string().min(1).max(256),
-    from: z.string().regex(/^\d{5,20}@(c\.us|lid)$/),
+    from: z.string().regex(SENDER_ID),
     fromMe: z.literal(false),
     hasMedia: z.boolean(),
     body: z.string().max(4000).nullish(),
@@ -28,12 +47,7 @@ export type Incoming = {
   kind: "text" | "image" | "voice";
   media?: { url: string; mimetype: string };
 };
-export function incoming(
-  value: unknown,
-  session: string,
-  since: number,
-  allowed: string[],
-): Incoming | null {
+export function incoming(value: unknown, session: string, since: number): Incoming | null {
   const parsed = eventSchema.safeParse(value);
   if (!parsed.success) return null;
   const { payload: p } = parsed.data;
@@ -45,7 +59,6 @@ export function incoming(
     p.timestamp > now + 30
   )
     return null;
-  if (allowed.length && !allowed.includes(p.from)) return null;
   const base = { id: p.id, chatId: p.from, text: (p.body ?? "").trim() };
   if (!p.hasMedia)
     return base.text && (!p.type || p.type === "chat") ? { ...base, kind: "text" } : null;

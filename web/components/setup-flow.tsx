@@ -9,6 +9,7 @@ import {
   IconQr,
   IconRefresh,
   IconSend,
+  IconShield,
 } from "@/components/icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ type Status = {
     accepted: number;
     replied: number;
     failed: number;
+    blocked: number;
     pending: number;
     processing: boolean;
     lastOutcome: string | null;
@@ -398,6 +400,17 @@ export function SetupFlow() {
                   </AlertDescription>
                 </Alert>
               ) : null}
+              {status && status.activity.blocked > 0 && status.activity.accepted === 0 ? (
+                <Alert>
+                  <IconShield />
+                  <AlertTitle>Your message arrived, but that sender isn’t allowed yet.</AlertTitle>
+                  <AlertDescription>
+                    Only senders listed in WAHA_ALLOWED_SENDERS get a reply. Run docker compose logs
+                    adapter to see the sender’s ID, add it to .env, then run docker compose up -d
+                    adapter and message again.
+                  </AlertDescription>
+                </Alert>
+              ) : null}
               {phoneConfirmed ? (
                 <Alert>
                   <IconCheck />
@@ -519,8 +532,9 @@ export function SetupFlow() {
               </p>
               <p className="text-sm leading-6 text-muted-foreground">
                 Get the Cloudflare token from Workers AI → Use REST API → Create API Token. To
-                change what the agent does, edit src/agent/index.ts. OpenAI calls cost money, so set
-                WAHA_ALLOWED_SENDERS in .env to limit who can message the agent.
+                change what the agent does, edit src/agent/index.ts. Only senders listed in
+                WAHA_ALLOWED_SENDERS get a reply, so provider calls stay limited to people you
+                chose.
               </p>
               <Button
                 variant="outline"

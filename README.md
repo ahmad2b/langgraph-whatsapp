@@ -32,7 +32,19 @@ npm run whatsapp -- start        # open a WhatsApp session
 npm run whatsapp -- qr           # save the pairing QR to .data/pairing.png
 ```
 
-Open `.data/pairing.png` and scan it from **WhatsApp → Linked devices** on the agent's phone. Then send it a message from your other account.
+Open `.data/pairing.png` and scan it from **WhatsApp → Linked devices** on the agent's phone.
+
+**Allow your test account.** The agent only answers senders you list, so nobody can use it by accident. Send it a message from your other account, then find that account's ID in the adapter log:
+
+```bash
+docker compose logs adapter | grep "Ignored a message"
+```
+
+Copy the ID, for example `15550000001@c.us` or `123456789012345@lid`, into `.env` as `WAHA_ALLOWED_SENDERS=...`, then apply it and message again:
+
+```bash
+docker compose up -d adapter
+```
 
 **What you should see:** _typing…_ appears in the chat, followed by a reply.
 
@@ -86,7 +98,7 @@ docker compose up -d agent adapter
 
 The Cloudflare token needs Workers AI Read and Edit permissions. Create it under **Workers AI → Use REST API → Create API Token**. Provider usage is billed to your own accounts.
 
-**Choose who can message it.** Set `WAHA_ALLOWED_SENDERS` in `.env` to a comma-separated list of exact WhatsApp IDs, and everyone else is ignored.
+**Choose who can message it.** `WAHA_ALLOWED_SENDERS` in `.env` is a comma-separated list of exact WhatsApp IDs. It starts empty, so nobody gets a reply until you add someone; the adapter log shows the ID of every sender it ignores. Set it to `*` to answer everyone, but only do that with spending limits on your provider accounts, since every message runs the agent and its tools.
 
 ## Reference
 
@@ -129,6 +141,7 @@ Your `.env`, pairing images and saved state are excluded from Git and from Docke
 <summary><b>Good to know</b></summary>
 
 - **It runs on an unofficial gateway.** WAHA links like WhatsApp Web; it is not Meta's WhatsApp Business Cloud API.
+- **Closed by default.** Only senders listed in `WAHA_ALLOWED_SENDERS` reach the agent.
 - **Private chats only.** Groups, the agent's own messages and old events are skipped. Voice notes are answered in text.
 - **One run per chat, nothing dropped.** Two runs on one thread fight over the same history, so each chat answers one message at a time. Messages that arrive mid-reply wait their turn, and texts that pile up are answered together, since people split one thought across several texts. Up to four chats run in parallel.
 - **Queue and delivery limits.** Up to 10 messages can wait per chat, with 50 waiting overall. The queue and duplicate tracking live in memory, so a restart can lose queued messages. Failed replies are not retried.

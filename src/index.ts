@@ -4,12 +4,19 @@ import { agentServer } from "./whatsapp/agent-server.js";
 import { speech } from "./media/speech.js";
 import { mediaPipeline } from "./media/pipeline.js";
 import { mediaGateway } from "./whatsapp/client.js";
+import { allowedSenders } from "./whatsapp/messages.js";
 
 function required(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`Missing ${name}; run npm run setup`);
   return value;
 }
+const allowed = allowedSenders(process.env.WAHA_ALLOWED_SENDERS);
+if (!allowed.length)
+  console.warn(
+    "WAHA_ALLOWED_SENDERS is empty, so every sender is ignored. Message the agent once, " +
+      "and this log will show the ID to add.",
+  );
 const agent = agentServer(process.env.LANGGRAPH_URL ?? "http://127.0.0.1:2024");
 const gateway = mediaGateway(
   process.env.WAHA_URL ?? "http://127.0.0.1:3011",
@@ -20,10 +27,7 @@ const app = adapter({
   session: "default",
   webhookSecret: required("WAHA_WEBHOOK_SECRET"),
   threadSecret: required("THREAD_SECRET"),
-  allowed: (process.env.WAHA_ALLOWED_SENDERS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean),
+  allowed,
   reply: agent.reply,
   send: gateway.text,
 });

@@ -115,7 +115,7 @@ const faqs = [
   },
   {
     q: "Are my keys and chats private?",
-    a: "Keys stay in your private .env on the server, and every service listens on localhost only. Keep the pairing QR code private: scanning it links that WhatsApp account to this gateway.",
+    a: "Keys stay in your private .env on the server, and every service listens on localhost only. Only senders you list in WAHA_ALLOWED_SENDERS reach the agent; everyone else is ignored. Keep the pairing QR code private: scanning it links that WhatsApp account to this gateway.",
   },
 ];
 

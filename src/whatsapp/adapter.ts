@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { incoming, threadId, type Incoming } from "./messages.js";
+import { incoming, isAllowed, threadId, type Incoming } from "./messages.js";
 
 type Options = {
   process?: (session: string, thread: string, eventId: string, message: Incoming) => Promise<void>;
@@ -49,7 +49,8 @@ export function adapter(options: Options) {
   const waiting: string[] = [];
   const pending = new Set<Promise<void>>();
   let queued = 0;
-  const counters = { accepted: 0, replied: 0, failed: 0, ignored: 0, duplicate: 0 };
+  const counters = { accepted: 0, replied: 0, failed: 0, ignored: 0, duplicate: 0, blocked: 0 };
+  const reported = new Set<string>();
 
   async function run(thread: string, job: Job) {
     const { eventKey, message } = job;
@@ -115,9 +116,22 @@ export function adapter(options: Options) {
       } catch {
         return new Response(null, { status: 400 });
       }
-      const message = incoming(value, options.session, since, options.allowed);
+      const message = incoming(value, options.session, since);
       if (!message) {
         counters.ignored++;
+        return new Response(null, { status: 200 });
+      }
+      // Closed by default: only listed senders reach the agent. Each new sender's ID is
+      // logged once, so the owner can copy it into WAHA_ALLOWED_SENDERS.
+      if (!isAllowed(options.allowed, message.chatId)) {
+        counters.blocked++;
+        if (!reported.has(message.chatId) && reported.size < 100) {
+          reported.add(message.chatId);
+          console.warn(
+            `Ignored a message from ${message.chatId}. To let them use the agent, add it to ` +
+              `WAHA_ALLOWED_SENDERS in .env, then run: docker compose up -d adapter`,
+          );
+        }
         return new Response(null, { status: 200 });
       }
       for (const [key, expiry] of seen) if (expiry < Date.now()) seen.delete(key);

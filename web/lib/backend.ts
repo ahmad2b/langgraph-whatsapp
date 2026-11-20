@@ -128,7 +128,8 @@ export async function proxySetup(request: Request, action: string) {
           : 0;
       const accepted = count("accepted"),
         replied = count("replied"),
-        failed = count("failed");
+        failed = count("failed"),
+        blocked = count("blocked");
       const pending = Math.max(0, accepted - replied - failed);
       return json({
         mode: config.AGENT_MODEL_MODE === "openai" ? "openai" : "fixture",
@@ -138,6 +139,7 @@ export async function proxySetup(request: Request, action: string) {
           accepted,
           replied,
           failed,
+          blocked,
           pending,
           processing: pending > 0,
           lastOutcome: null,
