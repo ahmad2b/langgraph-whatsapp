@@ -1,4 +1,4 @@
-FROM node:24.15.0-bookworm-slim
+FROM node:26.13.1-bookworm-slim
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
