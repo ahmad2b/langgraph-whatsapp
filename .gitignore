@@ -1,0 +1,26 @@
+node_modules/
+.env
+.langgraph_api/
+.langgraphjs_api/
+.data/
+*.log
+
+.dev.vars
+.wrangler/
+
+web/.next/
+web/.vercel/
+web/next-env.d.ts
+web/*.tsbuildinfo
+
+# Local tooling and temporary render output
+.playwright-mcp/
+.DS_Store
+
+# Launch material (posts and cover media); kept locally, not in the repo
+marketing/
+
+# Internal notes and local tooling files, kept out of the repo
+docs/
+web/*.md
+!web/README.md

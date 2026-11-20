@@ -1,0 +1,16 @@
+node_modules/
+package-lock.json
+.env*
+.data/
+.langgraph_api/
+.langgraphjs_api/
+*.log
+
+web/.next/
+web/next-env.d.ts
+web/*.tsbuildinfo
+web/package-lock.json
+
+.playwright-mcp/
+marketing/
+docs/
