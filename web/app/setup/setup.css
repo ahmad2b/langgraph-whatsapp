@@ -1,0 +1,215 @@
+/* /setup in the landing design. The setup flow's own layout lives in globals.css;
+   these rules restyle it with the landing tokens from landing.css. */
+
+/* ── Hero ────────────────────────────────────────── */
+.st-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 3.5rem);
+  padding-block: clamp(4rem, 9vw, 7rem) clamp(3rem, 6vw, 4.5rem);
+}
+.st-before {
+  width: 100%;
+  max-width: 40rem;
+  box-shadow: var(--shadow);
+}
+.st-hero h1 {
+  margin-top: 1rem;
+  font-size: clamp(2.4rem, 5.5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.st-before {
+  padding: clamp(1.4rem, 3vw, 2rem);
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.st-before h2 {
+  font-size: 1.35rem;
+}
+.st-before ul {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.st-before li {
+  padding-block: 0.85rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.925rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.st-before li:last-child {
+  padding-bottom: 0;
+}
+.st-before strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.st-before .copy-line {
+  margin-top: 0.6rem;
+}
+
+/* ── Setup workspace ─────────────────────────────── */
+.setup-page .setup-section {
+  background: transparent;
+  padding-bottom: clamp(3rem, 7vw, 5.5rem);
+}
+.setup-page .setup-workspace {
+  width: var(--wrap);
+  padding: clamp(2rem, 4vw, 3.5rem);
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.setup-page .setup-heading {
+  margin-bottom: 2rem;
+}
+.setup-page .setup-heading h2 {
+  font-weight: 600;
+  font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+/* The display font has no italic; mark emphasis with colour instead of a faked slant. */
+.setup-page .setup-heading h2 em {
+  font-style: normal;
+  color: var(--action);
+}
+.setup-page .setup-heading > p {
+  color: var(--ink-soft);
+}
+
+/* Steps read like the walkthrough on the home page. */
+.setup-page .setup-steps[data-slot="tabs-list"] {
+  border-color: var(--line);
+}
+.setup-page .setup-steps [data-slot="tabs-trigger"] {
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--ink-soft);
+}
+.setup-page .setup-steps [data-slot="tabs-trigger"][data-active] {
+  color: var(--ink);
+}
+.setup-page .setup-steps [data-slot="tabs-trigger"]::after {
+  background: var(--hi);
+}
+.setup-page .step-number {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-family: var(--font-mono), monospace;
+}
+.setup-page [data-active] > .step-number {
+  background: var(--hi);
+  border-color: var(--hi);
+  color: var(--ink);
+}
+
+.setup-page .setup-panel-title {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.setup-page .setup-instruction p,
+.setup-page .test-layout p {
+  color: var(--ink-soft);
+}
+
+/* Buttons match the landing buttons. */
+.setup-page .setup-panel [data-slot="button"] {
+  border-radius: 999px;
+  min-height: 2.9rem;
+  padding-inline: 1.25rem;
+  font-weight: 600;
+}
+
+/* QR stays on pure white so phones scan it reliably. */
+.setup-page .pairing-code {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+.setup-page .pairing-code [data-slot="empty-media"] {
+  background: var(--hi);
+  color: var(--ink);
+}
+.setup-page .pairing-code [data-slot="empty-title"] {
+  font-family: var(--font-heading), sans-serif;
+}
+
+.setup-page .activity-summary {
+  background: var(--paper-2);
+  border-radius: 22px;
+}
+.setup-page .activity-summary h4 {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.setup-page .activity-summary dd {
+  font-size: 1.35rem;
+  color: var(--ink);
+}
+
+.setup-page .browser-test-disclosure[data-slot="accordion"] {
+  border: 0;
+  border-radius: 0;
+  border-top: 1px solid var(--line);
+}
+.setup-page .browser-test-disclosure [data-slot="accordion-trigger"] {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.2rem;
+  padding-inline: 0;
+  min-height: 4rem;
+}
+
+.st-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 960px) {
+  .setup-page .setup-workspace {
+    padding: 1.5rem;
+  }
+}
+@media (max-width: 640px) {
+  .setup-page .setup-workspace {
+    padding: 1.25rem;
+  }
+  .setup-page .setup-steps [data-slot="tabs-trigger"] {
+    font-size: 0.85rem;
+  }
+}
+
+/* The public deployment explains local setup without mounting private controls. */
+.st-local-guide {
+  padding-block: 2rem;
+  max-width: 40rem;
+  text-align: center;
+}
+.st-local-guide .copy-line {
+  margin-bottom: 1rem;
+}
+.st-local-guide h2 {
+  margin-top: 0.75rem;
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+}
+.st-local-guide > p {
+  margin-block: 1.25rem;
+  color: var(--ink-soft);
+}
+.st-local-guide .st-requirements {
+  font-size: 0.875rem;
+}
