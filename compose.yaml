@@ -1,0 +1,81 @@
+name: langchain-whatsapp
+services:
+  agent:
+    build: .
+    command:
+      [
+        "node_modules/.bin/langgraphjs",
+        "dev",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "2024",
+        "--no-browser",
+        "--no-reload",
+      ]
+    environment:
+      AGENT_MODEL_MODE: ${AGENT_MODEL_MODE:-fixture}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      IMAGE_MODE: ${IMAGE_MODE:-fixture}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      OPENAI_IMAGE_MODEL: ${OPENAI_IMAGE_MODEL:-}
+      LANGSMITH_TRACING: "false"
+      LANGGRAPH_CLI_NO_ANALYTICS: "1"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:2024/ok').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports: ["127.0.0.1:2024:2024"]
+    volumes: ["agent-state:/app/.langgraph_api"]
+    networks: [private]
+  adapter:
+    build: .
+    environment:
+      ADAPTER_HOST: 0.0.0.0
+      SPEECH_MODE: ${SPEECH_MODE:-fixture}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY:-}
+      DEEPGRAM_STT_MODEL: ${DEEPGRAM_STT_MODEL:-}
+      DEEPGRAM_TTS_MODEL: ${DEEPGRAM_TTS_MODEL:-}
+      LANGGRAPH_URL: http://agent:2024
+      WAHA_URL: http://waha:3000
+      WAHA_API_KEY: ${WAHA_API_KEY:?Run npm run setup}
+      WAHA_WEBHOOK_SECRET: ${WAHA_WEBHOOK_SECRET:?Run npm run setup}
+      THREAD_SECRET: ${THREAD_SECRET:?Run npm run setup}
+      WAHA_ALLOWED_SENDERS: ${WAHA_ALLOWED_SENDERS:-}
+    ports: ["127.0.0.1:3010:3010"]
+    depends_on:
+      agent:
+        condition: service_healthy
+      waha:
+        condition: service_started
+    networks: [private]
+  waha:
+    image: devlikeapro/waha:latest-2026.10.1@sha256:2fc1787ddbd343ed2e7d59482846d1b22aa5ca134e29aa8d42d0e88c54e24779
+    environment:
+      WAHA_API_KEY: ${WAHA_API_KEY:?Run npm run setup}
+      WAHA_BASE_URL: http://waha:3000
+      WHATSAPP_DEFAULT_ENGINE: NOWEB
+      WAHA_NOWEB_WA_VERSION: auto-web
+      WAHA_PRINT_QR: "False"
+      WAHA_DASHBOARD_ENABLED: "false"
+      WHATSAPP_SWAGGER_ENABLED: "false"
+      WHATSAPP_FILES_LIFETIME: "60"
+    ports: ["127.0.0.1:3011:3000"]
+    volumes: ["waha-noweb-sessions:/app/.sessions"]
+    networks: [private]
+networks:
+  private:
+volumes:
+  agent-state:
+  waha-noweb-sessions:
