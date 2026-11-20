@@ -1,0 +1,931 @@
+/* Landing, /setup and 404. Ink and leaf tokens come from globals.css; everything here is scoped
+   under .landing. Light theme only: the site has no theme switch.
+   Style rules: flat surfaces (no gradients or glows), 1px lines, one idea per section,
+   one centered column, the same spacing between every section. */
+.landing {
+  --paper: var(--theme-paper);
+  --paper-2: var(--theme-soft);
+  --ink: var(--theme-ink);
+  --ink-soft: var(--theme-muted);
+  --action: var(--theme-action);
+  --hi: var(--theme-highlight);
+  --line: var(--theme-line);
+  --well: var(--theme-well);
+  --well-line: #2c2f37;
+  --well-text: #b9bdc6;
+  --ok: var(--action);
+  --wrap: min(100% - 2.5rem, 64rem);
+  --r: 16px;
+  --gap-section: clamp(4.5rem, 9vw, 7rem);
+  --shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
+
+  display: flow-root; /* stop the header's margin collapsing into body */
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.landing h1,
+.landing h2,
+.landing h3 {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.landing p {
+  text-wrap: pretty;
+}
+.landing mark {
+  color: inherit;
+  background: linear-gradient(transparent 62%, var(--hi) 62%, var(--hi) 92%, transparent 92%);
+  padding-inline: 0.04em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.landing :is(a, button):focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.wa-footer :is(a, button):focus-visible,
+.copy-line-button:focus-visible {
+  outline-color: var(--hi) !important;
+}
+.wa-wrap {
+  width: var(--wrap);
+  margin-inline: auto;
+}
+.wa-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Section rhythm ──────────────────────────────── */
+.wa-section {
+  padding-block: var(--gap-section);
+  border-top: 1px solid var(--line);
+}
+/* A tinted band: solid colour, full width, no rounding. */
+.wa-band,
+.wa-soft {
+  background: var(--paper-2);
+}
+.wa-eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+.wa-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 38rem;
+  margin: 0 auto clamp(2.5rem, 5vw, 3.25rem);
+  text-align: center;
+}
+.wa-head h2 {
+  margin-top: 0.75rem;
+  font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+}
+.wa-head > p:not(.wa-eyebrow) {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+
+/* ── Buttons and links ───────────────────────────── */
+.wa-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+.wa-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.wa-btn-hi {
+  background: var(--hi);
+  border-color: var(--hi);
+  color: var(--ink);
+}
+.wa-btn-ghost {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+.wa-textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: var(--action);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--action) 35%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.25em;
+}
+.wa-textlink svg {
+  width: 1rem;
+  height: 1rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .wa-btn:not(.wa-btn-hi, .wa-btn-ghost):hover {
+    background: var(--action);
+    border-color: var(--action);
+  }
+  .wa-btn-ghost:hover {
+    border-color: var(--ink-soft);
+  }
+  .wa-textlink:hover {
+    text-decoration-color: currentColor;
+  }
+}
+.wa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.wa-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.wa-header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 3.75rem;
+}
+.wa-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  justify-self: start;
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.wa-mark {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+}
+.wa-brand-x {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.wa-nav {
+  display: flex;
+  gap: 1.75rem;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.wa-nav a {
+  white-space: nowrap;
+}
+.wa-nav a:hover,
+.wa-nav a[aria-current="page"] {
+  color: var(--ink);
+}
+.wa-nav a[aria-current="page"] {
+  text-decoration: underline 2px var(--hi);
+  text-underline-offset: 0.4em;
+}
+.wa-source,
+.wa-source-slot {
+  justify-self: end;
+}
+.wa-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.wa-source svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ── Hero ────────────────────────────────────────── */
+.wa-hero {
+  padding-block: clamp(5rem, 11vw, 8rem) clamp(4.5rem, 9vw, 7rem);
+}
+.wa-hero h1 {
+  max-width: 16ch;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.wa-lede {
+  margin-top: 1.25rem;
+  max-width: 34rem;
+  font-size: clamp(1.02rem, 1.5vw, 1.15rem);
+  color: var(--ink-soft);
+}
+.wa-hero .wa-actions {
+  margin-top: 2rem;
+}
+
+/* ── Strip: one bordered card split into cells ───── */
+/* The 1px gap over a line-coloured background draws every divider, for any column count. */
+.wa-strip {
+  --cols: 4;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--line);
+  overflow: hidden;
+}
+.wa-strip-3 {
+  --cols: 3;
+}
+.wa-strip li {
+  padding: 1.6rem 1.4rem 1.7rem;
+  background: #fff;
+  text-align: left;
+}
+/* Icons stand on their own (no tile): bold ink outline over an offset colour blob.
+   Each section picks the blob colour through --icon-fill. */
+.wa-strip {
+  --icon-fill: #b6e3a1;
+}
+.wa-strip[data-tone="neutral"] {
+  --icon-fill: #e4ddc8;
+}
+.wa-strip[data-tone="idea"] {
+  --icon-fill: var(--hi);
+}
+.wa-strip-icon {
+  display: block;
+  color: var(--ink);
+}
+.wa-strip-icon svg {
+  display: block;
+  width: 2.85rem;
+  height: 2.85rem;
+}
+.wa-strip h3 {
+  margin-top: 1.25rem;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.wa-strip p {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+/* Small group label inside a section, e.g. "Extend the starter" */
+.landing .wa-subhead {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.landing .wa-subhead::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.landing .wa-strip + .wa-subhead {
+  margin-top: 2.5rem;
+}
+.wa-help {
+  max-width: 40rem;
+  margin: 2rem auto 0;
+  text-align: center;
+  font-size: 0.925rem;
+  color: var(--ink-soft);
+}
+
+/* ── How it works: zigzag ────────────────────────── */
+/* One horizontal rail; cards alternate above and below it (wide screens). */
+.wa-zz {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: auto 3rem auto;
+  column-gap: 1rem;
+}
+.wa-zz > li {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  justify-items: center;
+}
+.wa-zz-rail {
+  position: relative;
+  grid-row: 2;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+.wa-zz-rail::before {
+  /* the rail, bridging the column gap to the neighbouring stops */
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -0.5rem;
+  right: -0.5rem;
+  height: 1px;
+  background: var(--ink-soft);
+  opacity: 0.4;
+}
+.wa-zz > li:first-child .wa-zz-rail::before {
+  left: 50%;
+}
+.wa-zz > li:last-child .wa-zz-rail::before {
+  right: 50%;
+}
+.wa-zz-node {
+  position: relative;
+  z-index: 1; /* above the rail and its green fill */
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--action);
+}
+.wa-zz-node {
+  --icon-fill: #b6e3a1;
+}
+[data-yours] .wa-zz-node {
+  --icon-fill: #fff;
+}
+[data-state="current"] .wa-zz-node {
+  --icon-fill: color-mix(in srgb, #fff 35%, transparent);
+}
+.wa-zz-node svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+.wa-zz-card {
+  position: relative;
+  width: 150%;
+  max-width: 16rem;
+  padding: 0.95rem 1.1rem 1.05rem;
+  border-radius: var(--r);
+  background: #fff;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+[data-pos="above"] > .wa-zz-card {
+  grid-row: 1;
+  align-self: end;
+  margin-bottom: 0.85rem;
+}
+[data-pos="below"] > .wa-zz-card {
+  grid-row: 3;
+  align-self: start;
+  margin-top: 0.85rem;
+}
+.wa-zz > li:first-child > .wa-zz-card {
+  justify-self: start;
+}
+.wa-zz > li:last-child > .wa-zz-card {
+  justify-self: end;
+}
+.wa-zz-card::after {
+  /* stem from the card to its node */
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  height: 0.85rem;
+  background: var(--ink-soft);
+  opacity: 0.4;
+}
+.wa-zz > li:first-child > .wa-zz-card::after {
+  left: calc((100% / 1.5) / 2);
+}
+.wa-zz > li:last-child > .wa-zz-card::after {
+  left: auto;
+  right: calc((100% / 1.5) / 2);
+}
+[data-pos="above"] > .wa-zz-card::after {
+  top: 100%;
+}
+[data-pos="below"] > .wa-zz-card::after {
+  bottom: 100%;
+}
+.wa-zz-tag {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.wa-zz-card h3 {
+  margin-top: 0.3rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.015em;
+}
+.wa-zz-card p {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+/* The one stop that is the reader's code. */
+[data-yours] > .wa-zz-card {
+  background: var(--hi);
+  border-color: var(--hi);
+}
+[data-yours] .wa-zz-tag {
+  color: var(--ink);
+  font-weight: 600;
+}
+[data-yours] .wa-zz-card p {
+  color: var(--ink);
+}
+[data-yours] .wa-zz-node {
+  background: var(--hi);
+  border-color: var(--hi);
+  color: var(--ink);
+}
+
+/* Loop animation (MessageFlow sets data-state). The green fill sits over the grey rail:
+   leaving a stop fills its right half, then arriving fills the next stop's left half,
+   then that stop's node and card light up. */
+.wa-zz-rail::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -0.5rem;
+  right: -0.5rem;
+  height: 2px;
+  margin-top: -0.5px;
+  background: var(--action);
+  transform: scaleX(var(--fill, 0));
+  transform-origin: left center;
+  transition: transform 300ms ease-out;
+}
+.wa-zz > li:first-child .wa-zz-rail::after {
+  left: 50%;
+}
+.wa-zz > li:last-child .wa-zz-rail::after {
+  right: 50%;
+}
+.wa-zz > li[data-state="done"] {
+  --fill: 1;
+}
+.wa-zz > li[data-state="current"] {
+  --fill: 0.5;
+}
+.wa-zz > li:first-child[data-state="current"] {
+  --fill: 0;
+}
+.wa-zz > li:last-child[data-state="current"] {
+  --fill: 1;
+}
+.wa-zz > li[data-state="done"] .wa-zz-rail::after {
+  transition: transform 260ms linear;
+}
+.wa-zz > li[data-state="current"] .wa-zz-rail::after {
+  transition: transform 260ms linear 260ms;
+}
+.wa-zz-node,
+.wa-zz-card {
+  transition:
+    background-color 250ms ease-out,
+    border-color 250ms ease-out,
+    color 250ms ease-out,
+    box-shadow 300ms ease-out,
+    transform 300ms ease-out;
+}
+[data-state="done"] .wa-zz-node {
+  border-color: var(--action);
+  color: var(--action);
+}
+[data-state="current"] .wa-zz-node {
+  background: var(--action);
+  border-color: var(--action);
+  color: #fff;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--action) 16%, transparent);
+  transition-delay: 500ms;
+}
+[data-state="current"] > .wa-zz-card {
+  border-color: var(--action);
+  box-shadow: 0 18px 36px -20px color-mix(in srgb, var(--ink) 45%, transparent);
+  transform: translateY(-3px);
+  transition-delay: 500ms;
+}
+[data-pos="below"][data-state="current"] > .wa-zz-card {
+  transform: translateY(3px);
+}
+[data-yours][data-state="current"] .wa-zz-node {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--hi);
+}
+[data-yours][data-state="current"] > .wa-zz-card {
+  border-color: var(--ink);
+}
+
+/* ── Chat bubbles (404) ──────────────────────────── */
+.wa-b {
+  max-width: 82%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
+}
+.wa-b-me {
+  background: #e3eedd;
+  border-bottom-right-radius: 4px;
+}
+
+/* ── Copy line (setup page) ──────────────────────── */
+.copy-line {
+  position: relative;
+  min-width: 0;
+  border-radius: 12px;
+  background: var(--well);
+  color: #f1f2f4;
+  text-align: left;
+}
+.copy-line pre {
+  overflow-x: auto;
+  padding: 0.85rem 3.25rem 0.85rem 1rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.copy-line-row {
+  display: block;
+  white-space: pre;
+}
+.copy-line-prompt {
+  margin-right: 0.6rem;
+  color: var(--hi);
+  user-select: none;
+}
+.copy-line-row:not(:has(> .copy-line-prompt)) {
+  color: var(--well-text);
+}
+.copy-line-button {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 8px;
+  color: var(--well-text);
+}
+.copy-line-button:hover {
+  background: #ffffff1a;
+  color: #fff;
+}
+.copy-line-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ── References ──────────────────────────────────── */
+.wa-refs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 2.5rem;
+  max-width: 52rem;
+  margin-inline: auto;
+}
+.wa-refs h3 {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+.wa-refs ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+.wa-refs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.wa-refs a:hover {
+  color: var(--action);
+}
+.wa-refs svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* ── FAQ ─────────────────────────────────────────── */
+.wa-faq[data-slot="accordion"] {
+  max-width: 44rem;
+  margin-inline: auto;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+.wa-faq [data-slot="accordion-item"] {
+  border-bottom: 1px solid var(--line);
+}
+.wa-faq [data-slot="accordion-trigger"] {
+  padding-inline: 0;
+  padding-block: 1.05rem;
+  font-family: var(--font-heading), sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.wa-faq [data-slot="accordion-trigger"]:hover {
+  text-decoration: none;
+  color: var(--action);
+}
+.wa-faq [data-slot="accordion-content"] p {
+  padding-bottom: 0.6rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+.wa-footer {
+  padding-block: clamp(3.5rem, 7vw, 5rem) 2rem;
+  background: var(--well);
+  color: #fff;
+  text-align: center;
+}
+.wa-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+.wa-note-title {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #fff;
+}
+.wa-note > p {
+  font-size: clamp(1rem, 1.6vw, 1.1rem);
+  line-height: 1.6;
+  color: var(--well-text);
+}
+.wa-note > p a {
+  color: #fff;
+  text-decoration: underline 1.5px var(--hi);
+  text-underline-offset: 0.25em;
+}
+.wa-note-actions {
+  display: flex;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+}
+.wa-note-or {
+  font-size: 0.9rem;
+  color: var(--well-text);
+}
+.wa-footer .wa-textlink {
+  color: #fff;
+  text-decoration-color: var(--hi);
+  overflow-wrap: anywhere;
+}
+.wa-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.75rem;
+  margin-top: clamp(2.5rem, 5vw, 3.25rem);
+  font-size: 0.875rem;
+}
+.wa-footer-links a {
+  color: #fff;
+}
+.wa-footer-links a:hover {
+  text-decoration: underline 1.5px var(--hi);
+  text-underline-offset: 0.25em;
+}
+.wa-footer-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--well-line);
+  font-size: 0.78rem;
+  color: var(--well-text);
+}
+.wa-footer-brand .wa-mark {
+  display: inline-block;
+  outline: 1px solid var(--well-line);
+  border-radius: 6px;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.4rem;
+  vertical-align: -0.28em;
+}
+.wa-footer-meta a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* ── 404 ─────────────────────────────────────────── */
+.wa-404 {
+  padding-block: clamp(5rem, 12vw, 8rem);
+}
+.wa-404 h1 {
+  margin-top: 1rem;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.wa-404-chat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-block: 2.25rem;
+}
+.wa-404-chat .wa-b {
+  max-width: none;
+}
+.wa-404-chat small {
+  font-size: 0.75rem;
+  color: #b4433a;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 960px) {
+  .wa-refs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .wa-header-inner {
+    grid-template-columns: 1fr auto;
+  }
+  .wa-nav {
+    display: none;
+  }
+  .wa-strip,
+  .wa-strip-3 {
+    --cols: 2;
+  }
+  /* Zigzag stacks: rail on the left, each card beside its node. */
+  .wa-zz {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: 0.75rem;
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+  .wa-zz > li {
+    grid-row: auto;
+    grid-template-rows: none;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+    align-items: center;
+  }
+  .wa-zz-rail {
+    grid-row: 1;
+    grid-column: 1;
+    height: 100%;
+  }
+  .wa-zz-rail::before,
+  .wa-zz > li:first-child .wa-zz-rail::before,
+  .wa-zz > li:last-child .wa-zz-rail::before {
+    top: -0.375rem;
+    bottom: -0.375rem;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+  .wa-zz > li:first-child .wa-zz-rail::before {
+    top: 50%;
+  }
+  .wa-zz > li:last-child .wa-zz-rail::before {
+    bottom: 50%;
+  }
+  .wa-zz-rail::after,
+  .wa-zz > li:first-child .wa-zz-rail::after,
+  .wa-zz > li:last-child .wa-zz-rail::after {
+    top: -0.375rem;
+    bottom: -0.375rem;
+    left: 50%;
+    right: auto;
+    width: 2px;
+    height: auto;
+    margin: 0 0 0 -0.5px;
+    transform: scaleY(var(--fill, 0));
+    transform-origin: center top;
+  }
+  .wa-zz > li:first-child .wa-zz-rail::after {
+    top: 50%;
+  }
+  .wa-zz > li:last-child .wa-zz-rail::after {
+    bottom: 50%;
+  }
+  [data-pos][data-state="current"] > .wa-zz-card {
+    transform: translateX(3px);
+  }
+  [data-pos] > .wa-zz-card,
+  .wa-zz > li:first-child > .wa-zz-card,
+  .wa-zz > li:last-child > .wa-zz-card {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: stretch;
+    align-self: center;
+    width: auto;
+    max-width: none;
+    margin: 0;
+  }
+  .wa-zz-card::after {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .wa-refs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .landing {
+    --wrap: calc(100% - 2rem);
+  }
+  .wa-strip,
+  .wa-strip-3 {
+    --cols: 1;
+  }
+  .wa-strip li {
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    column-gap: 0.9rem;
+    padding: 1.15rem 1.1rem;
+  }
+  .wa-strip-icon {
+    grid-row: span 2;
+  }
+  .wa-strip h3 {
+    margin-top: 0.1rem;
+  }
+  .wa-brand > span {
+    font-size: 0.95rem;
+  }
+  .wa-actions {
+    width: 100%;
+  }
+  .wa-actions .wa-btn {
+    width: 100%;
+  }
+}
