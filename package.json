@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@langchain/langgraph-cli": "1.8.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.6.6",
     "prettier": "3.10.1",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
