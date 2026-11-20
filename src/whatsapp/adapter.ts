@@ -10,16 +10,89 @@ type Options = {
   reply: (thread: string, message: string, text: string) => Promise<string>;
   send: (session: string, chat: string, text: string) => Promise<void>;
 };
+type Job = { eventKey: string; message: Incoming; count: number };
+
+// Up to four chats run at once. Each chat has its own queue, so a second message
+// that arrives mid-reply waits its turn instead of being refused, and replies stay in order.
+const MAX_ACTIVE_CHATS = 4;
+const MAX_QUEUED_PER_CHAT = 10;
+const MAX_QUEUED_TOTAL = 50;
+const MAX_COMBINED_TEXT = 4000;
+
+// Text messages that piled up while the agent was busy become one turn, because
+// people often split one thought across several texts. Media stays separate.
+export function takeTurn(queue: Job[]): Job {
+  const first = queue.shift()!;
+  if (first.message.kind !== "text") return first;
+  const texts = [first.message.text];
+  let last = first;
+  let count = first.count;
+  let length = first.message.text.length;
+  while (
+    queue[0]?.message.kind === "text" &&
+    length + 1 + queue[0].message.text.length <= MAX_COMBINED_TEXT
+  ) {
+    last = queue.shift()!;
+    texts.push(last.message.text);
+    count += last.count;
+    length += 1 + last.message.text.length;
+  }
+  return texts.length === 1
+    ? first
+    : { eventKey: last.eventKey, message: { ...last.message, text: texts.join("\n") }, count };
+}
+
 export function adapter(options: Options) {
   const since = Math.floor(Date.now() / 1000);
   const seen = new Map<string, number>();
-  const busy = new Set<string>();
+  const queues = new Map<string, Job[]>();
+  const waiting: string[] = [];
   const pending = new Set<Promise<void>>();
+  let queued = 0;
   const counters = { accepted: 0, replied: 0, failed: 0, ignored: 0, duplicate: 0 };
+
+  async function run(thread: string, job: Job) {
+    const { eventKey, message } = job;
+    try {
+      if (options.process) await options.process(options.session, thread, eventKey, message);
+      else {
+        if (message.kind !== "text") throw new Error("Media processor not configured");
+        const text = await options.reply(thread, eventKey, message.text);
+        await options.send(options.session, message.chatId, text);
+      }
+      counters.replied += job.count;
+    } catch {
+      counters.failed += job.count;
+      console.error(
+        "WhatsApp reply failed; no automatic retry. Check local server/session status.",
+      );
+    }
+  }
+
+  // Drains one chat's queue in order, then hands its slot to the next waiting chat.
+  function start(thread: string) {
+    const work = (async () => {
+      const queue = queues.get(thread)!;
+      while (queue.length) {
+        const before = queue.length;
+        const job = takeTurn(queue);
+        queued -= before - queue.length;
+        await run(thread, job);
+      }
+      queues.delete(thread);
+    })();
+    pending.add(work);
+    void work.finally(() => {
+      pending.delete(work);
+      const next = waiting.shift();
+      if (next) start(next);
+    });
+  }
+
   return {
     counters,
     async idle() {
-      await Promise.all(pending);
+      while (pending.size) await Promise.all(pending);
     },
     async handle(request: Request): Promise<Response> {
       if (request.method === "GET" && new URL(request.url).pathname === "/health")
@@ -56,32 +129,24 @@ export function adapter(options: Options) {
         counters.duplicate++;
         return new Response(null, { status: 200 });
       }
-      // This lock covers run + outbound delivery, preserving reply order. No custom graph runner/queue.
-      if (busy.has(id) || pending.size >= 4 || seen.size >= 1000)
+      // Refuse before admission when memory bounds are hit, so a retry is not deduplicated.
+      const queue = queues.get(id);
+      if (
+        (queue?.length ?? 0) >= MAX_QUEUED_PER_CHAT ||
+        queued >= MAX_QUEUED_TOTAL ||
+        seen.size >= 1000
+      )
         return new Response(null, { status: 503 });
       seen.set(eventKey, Date.now() + 3600_000);
-      busy.add(id);
       counters.accepted++;
-      const work = (async () => {
-        try {
-          if (options.process) await options.process(options.session, id, eventKey, message);
-          else {
-            if (message.kind !== "text") throw new Error("Media processor not configured");
-            const text = await options.reply(id, eventKey, message.text);
-            await options.send(options.session, message.chatId, text);
-          }
-          counters.replied++;
-        } catch {
-          counters.failed++;
-          console.error(
-            "WhatsApp reply failed; no automatic retry. Check local server/session status.",
-          );
-        } finally {
-          busy.delete(id);
-        }
-      })();
-      pending.add(work);
-      void work.finally(() => pending.delete(work));
+      queued++;
+      const job = { eventKey, message, count: 1 };
+      if (queue) queue.push(job);
+      else {
+        queues.set(id, [job]);
+        if (pending.size < MAX_ACTIVE_CHATS) start(id);
+        else waiting.push(id);
+      }
       return new Response(null, { status: 202 });
     },
   };
