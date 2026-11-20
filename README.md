@@ -1,6 +1,6 @@
 # LangGraph × WhatsApp
 
-**Give your LangGraph agent its own WhatsApp.** Link a WhatsApp account with one QR scan, and people can talk to your agent from the app they already use: by text, voice note or photo. It replies in the same chat and remembers each person.
+**Give your LangGraph agent its own WhatsApp.** Link a WhatsApp account with one QR scan, and people can talk to your agent from the app they already use: by text, voice note or photo. It replies in the same chat and keeps that conversation’s context.
 
 ![A LangGraph agent node connected to a WhatsApp channel node, with a message travelling between them](.github/assets/cover.gif)
 
@@ -8,12 +8,14 @@
 
 ## Why it's useful
 
-- **Meet people where they already are.** No app to install, no account to create. If they have WhatsApp, they can reach your agent.
+- **Meet people where they already are.** No extra app to install or account to create. If they have WhatsApp, they can reach your agent.
 - **Let them ask however they like.** Type, send a voice note or share a photo. Ask for a picture and the agent sends one back.
-- **Conversations that remember.** Every person gets their own conversation, so follow-up questions just work.
+- **Conversations that remember.** Each chat has its own history, so follow-up questions can use earlier messages.
 - **Start with your agent.** The WhatsApp connection and message routing are built, so you can begin with the instructions and tools in one file.
 
 ## Get started
+
+This local starter uses WAHA, an unofficial linked-device gateway, rather than Meta’s official WhatsApp Business Cloud API.
 
 **You'll need** Node.js 24, Docker, a WhatsApp account for the agent (a spare one is best) and a second account to message it from.
 
@@ -128,8 +130,9 @@ Your `.env`, pairing images and saved state are excluded from Git and from Docke
 
 - **It runs on an unofficial gateway.** WAHA links like WhatsApp Web; it is not Meta's WhatsApp Business Cloud API.
 - **Private chats only.** Groups, the agent's own messages and old events are skipped. Voice notes are answered in text.
-- **Built for a first group of users.** Up to four replies run at once, one at a time per chat. Duplicate tracking lives in memory, and a failed reply isn't retried.
-- **Saving is slightly delayed.** The local Agent Server writes to disk a few seconds after each change, so a crash can lose the newest messages.
+- **One run per chat, nothing dropped.** Two runs on one thread fight over the same history, so each chat answers one message at a time. Messages that arrive mid-reply wait their turn, and texts that pile up are answered together, since people split one thought across several texts. Up to four chats run in parallel.
+- **Queue and delivery limits.** Up to 10 messages can wait per chat, with 50 waiting overall. The queue and duplicate tracking live in memory, so a restart can lose queued messages. Failed replies are not retried.
+- **Saving is slightly delayed.** The local Agent Server delays writes to disk, so a crash can lose the newest messages.
 - **Bounded by design.** Provider calls and agent runs have timeouts and bounded outputs. There's no built-in spending cap, so set one with your provider.
 - **Keep it private.** For a public service, add authentication, durable delivery and monitoring.
 
